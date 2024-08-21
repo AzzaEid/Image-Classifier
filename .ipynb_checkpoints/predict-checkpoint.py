@@ -3,6 +3,7 @@ import argparse
 import json
 import numpy as np
 import tensorflow as tf
+import tensorflow_hub as hub
 from PIL import Image
 import os
 
@@ -85,7 +86,7 @@ def main():
     Basic usage command:
            python predict.py /path/to/image saved_model
     """
-    if args.top_k is None and args.category_names is None:
+    if args.top_k is None and args.class_names is None:
         probs, classes = predict(image_path, model)
         print("The probabilities and classes of the images: ")
         
@@ -102,21 +103,22 @@ def main():
        
     """
     Options:
-           python predict.py /path/to/image saved_model --category_names map.json
+           python predict.py /path/to/image saved_model --class_names map.json
            
-           --category_names: Path to a JSON file mapping labels to flower names:
+           --class_names: Path to a JSON file mapping labels to flower names:
     """
-    elif args.category_names is not None:
-        with open(args.category_names, 'r') as f:
+    elif args.class_names is not None:
+        with open(args.class_names, 'r') as f:
             class_names = json.load(f)
-        probs, classes = predict(image_path, model)
+        top_k = int(args.top_k)
+        probs, classes = predict(image_path, model,top_k)
         print("The probabilities and classes of the images: ")
         classes = [class_names[class_] for class_ in  classes]
         
             
             
     print("Top {} Predictions:".format(args.top_k))
-    for prob, label in zip(probs, class_labels):
+    for prob, label in zip(probs, classes):
         print(f"{label}: {prob:.4f}")
     
     print('\nThe flower is: "{}"'.format(classes[0]))
